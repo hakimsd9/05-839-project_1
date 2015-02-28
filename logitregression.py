@@ -43,7 +43,11 @@ dummy_ranks3 = pd.get_dummies(df['LowIncome'], prefix='LowIncome')
 print dummy_ranks3.head()
 
 # create a clean data frame for the regression
-#add statelist back in later as DUMMY... turn state-county into indices!
+# DiabetesBool is a variable that determines whether a state has a rate of diabetes over 1 standard deviation 
+# above the mean (this would return a value of 1) or not (returns a value of 0)
+# FoodDesert determines whether area is a food desert (returns 1) or not (returns 0)
+# Population is simply the population
+# "LowIncome" was left out because low income is part of the definition of food desert, so this would be inappropriate to add here
 cols_to_keep = ['DiabetesBool','FoodDesert', 'Population']
 data = df[cols_to_keep].join(dummy_ranks2.ix[:,'Urban_1':])
 
@@ -53,7 +57,6 @@ print data.head()
 data['intercept'] = 0.5  
 
 train_cols = data.columns[1:]
-# Index([gre, gpa, prestige_2, prestige_3, prestige_4], dtype=object)
 
 mask = ~np.isnan(data['DiabetesBool']) & ~np.isnan(data['Population']) & ~np.isnan(data['DiabetesBool']) & ~np.isnan(data['Urban_1']) 
 logit = sm.Logit(data['DiabetesBool'][mask], data[train_cols][mask])
@@ -61,5 +64,6 @@ logit = sm.Logit(data['DiabetesBool'][mask], data[train_cols][mask])
 # fit the model
 result = logit.fit() 
 
-# cool enough to deserve it's own gist
+# Did not add state because the number of different variables was beyond the ability of python's logit fxn to handle
+# DiabetesBool is a variable
 print result.summary() 
