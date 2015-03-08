@@ -91,7 +91,7 @@ abbreviationsDic = {
 # Then regroup by county
 def createIntermediateCsv(csvInput, csvOutput='foodDeserts_intermediate.csv', delim=','):
     filtered_vars = ['State', 'County', 'LILATracts_1And10', 'POP2010', 'Urban', 'LowIncomeTracts']
-    with open(csvInput) as src, open(csvOutput, 'w', newline='') as dst:
+    with open(csvInput) as src, open(csvOutput, 'w', newline=',') as dst:
         rdr = reader(src, delimiter=delim)
         wrt = writer(dst, delimiter=delim)
         headers = next(rdr)
@@ -131,7 +131,7 @@ def createFinalCsv(csvInput='foodDeserts_intermediate.csv', csvOutput='foodDeser
     currentLISum = 0
     counter = 0
 
-    with open(csvInput) as src, open(csvOutput, 'w', newline = '') as dst:
+    with open(csvInput) as src, open(csvOutput, 'w', newline = ',') as dst:
         rdr = reader(src, delimiter=delim)
         wrt = writer(dst, delimiter=delim)
         headers = next(rdr)
