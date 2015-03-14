@@ -1,0 +1,182 @@
+__author__ = 'patrickwedgeworth'  
+#Citation 1: http://stackoverflow.com/questions/13643363/linear-regression-of-arrays-containing-nans-in-python-numpy
+#Citation 2: http://blog.yhathq.com/posts/logistic-regression-and-python.html
+
+
+import pandas as pd
+import matplotlib
+from statsmodels import api as sm
+import pylab as pl
+import numpy as np
+from scipy.stats.stats import pearsonr
+import scipy.stats as st
+
+# read the data in"
+df = pd.read_csv("/Users/patrickwedgeworth/Desktop/Mankoffdev/ProfByte1/Project1/output_median(1).csv")
+
+# take a look at the dataset
+print df.head()
+
+#name columns
+df.columns = ["Zip","Provider","Expenditures","OP_6","OP_7","SCIP_INF_3","SCIP_CARD_2","SCIP_VTE_2","SCIP_INF_9","PN_6","HF_1","HF_2","IMM_2","Median"]
+print df.columns
+
+# summarize the data
+print df.describe()
+
+#create and populate arrays that show whether the hospital @ index meets the 
+#standard (1) or not (0) and arrays that will store actual values (indexarrays)
+HF_1_scorearray = []
+HF_1_indexarray = []
+HF_2_scorearray = []
+HF_2_indexarray = []
+IMM_2_indexarray = []
+IMM_2_scorearray = []
+OP_6_indexarray = []
+OP_6_scorearray = []
+OP_7_indexarray = []
+OP_7_scorearray = []
+PN_6_indexarray = []
+PN_6_scorearray = []
+SCIP_CARD_2_indexarray = []
+SCIP_CARD_2_scorearray = []
+SCIP_INF_3_indexarray = []
+SCIP_INF_3_scorearray = []
+SCIP_INF_9_indexarray = []
+SCIP_INF_9_scorearray = []
+SCIP_VTE_2_indexarray = []
+SCIP_VTE_2_scorearray = []
+
+#create bins that will divide hospitals in "qualified for award" (binY)
+#or "not qualified for award" (binN)
+binY = []
+binN = []
+medianbinY = []
+medianbinN = []
+
+#Create arrays to store the final number of criteria met by each hospital (finalscorearray)
+#and to store the average score for each hospital (finalmeanarray)
+finalscorearray = []
+finalmeanarray = []
+
+#populate these arrays
+for index in range(len(df["Provider"])):
+    HF_1_indexarray.extend([df["HF_1"][index]])
+    if df["HF_1"][index] > 90:
+        HF_1_scorearray.extend([1])
+    else:
+        HF_1_scorearray.extend([0])
+        
+    HF_2_indexarray.extend([df["HF_2"][index]])
+    if df["HF_2"][index] > 90:
+        HF_2_scorearray.extend([1])
+    else:
+        HF_2_scorearray.extend([0])
+        
+    IMM_2_indexarray.extend([df["IMM_2"][index]])
+    if df["IMM_2"][index] > 90:
+        IMM_2_scorearray.extend([1])
+    else:
+        IMM_2_scorearray.extend([0])
+        
+    OP_6_indexarray.extend([df["OP_6"][index]])
+    if df["OP_6"][index] > 90:
+        OP_6_scorearray.extend([1])
+    else:
+        OP_6_scorearray.extend([0])
+        
+    OP_7_indexarray.extend([df["OP_7"][index]])
+    if df["OP_7"][index] > 90:
+        OP_7_scorearray.extend([1])
+    else:
+        OP_7_scorearray.extend([0])
+
+    PN_6_indexarray.extend([df["PN_6"][index]])  
+    if df["PN_6"][index] > 90:
+        PN_6_scorearray.extend([1])
+    else:
+        PN_6_scorearray.extend([0])
+        
+    SCIP_CARD_2_indexarray.extend([df["SCIP_CARD_2"][index]])
+    if df["SCIP_CARD_2"][index] > 90:
+        SCIP_CARD_2_scorearray.extend([1])
+    else: 
+        SCIP_CARD_2_scorearray.extend([0])
+        
+    SCIP_INF_3_indexarray.extend([df["SCIP_INF_3"][index]])
+    if df["SCIP_INF_3"][index] > 90:
+        SCIP_INF_3_scorearray.extend([1])
+    else:
+        SCIP_INF_3_scorearray.extend([0])
+        
+    SCIP_INF_9_indexarray.extend([df["SCIP_INF_9"][index]])
+    if df["SCIP_INF_9"][index] > 90:
+        SCIP_INF_9_scorearray.extend([1])
+    else:
+        SCIP_INF_9_scorearray.extend([0])
+    
+    SCIP_VTE_2_indexarray.extend([df["SCIP_VTE_2"][index]])
+    if df["SCIP_VTE_2"][index] > 90:
+        SCIP_VTE_2_scorearray.extend([1])
+    else:
+        SCIP_VTE_2_scorearray.extend([0])
+    
+    scoreval = HF_1_scorearray[index]+HF_2_scorearray[index]+IMM_2_scorearray[index]+OP_6_scorearray[index]+OP_7_scorearray[index]+PN_6_scorearray[index]+SCIP_CARD_2_scorearray[index]+SCIP_INF_3_scorearray[index]+SCIP_INF_9_scorearray[index]+SCIP_VTE_2_scorearray[index]
+    finalscorearray.extend([scoreval])
+    
+    if scoreval == 10:
+        binY.extend([df["Expenditures"][index]])
+        medianbinY.extend([df["Median"][index]])
+    else:
+        binN.extend([df["Expenditures"][index]])
+        medianbinN.extend([df["Median"][index]])
+            
+            
+    finalpercentarray = [df["HF_1"][index], df["HF_2"][index], df["IMM_2"][index], df["OP_6"][index], df["OP_7"][index], df["PN_6"][index], df["SCIP_CARD_2"][index], df["SCIP_INF_3"][index],df["SCIP_INF_9"][index], df["SCIP_VTE_2"][index]]
+    finalmeanarray.extend([np.mean(finalpercentarray)])
+
+    
+#Although pearson came to the same conclusion as simply using medians, 
+#it is meant for normally distributed data.  Ours isn't so all pearson analysis has been commented
+
+#print np.corrcoef(finalmeanarray,df["Expenditures"])
+#print pearsonr(finalmeanarray,df["Expenditures"]) 
+#print pearsonr(HF_1_indexarray,df["Expenditures"]) 
+#print pearsonr(HF_2_indexarray,df["Expenditures"]) 
+#print pearsonr(IMM_2_indexarray,df["Expenditures"]) 
+#print pearsonr(OP_6_indexarray,df["Expenditures"]) 
+#print pearsonr(OP_7_scorearray,df["Expenditures"]) 
+#print pearsonr(PN_6_scorearray,df["Expenditures"]) 
+#print pearsonr(SCIP_CARD_2_scorearray,df["Expenditures"]) 
+#print pearsonr(SCIP_INF_3_scorearray,df["Expenditures"]) 
+#print pearsonr(SCIP_INF_9_scorearray,df["Expenditures"]) 
+#print pearsonr(SCIP_VTE_2_scorearray,df["Expenditures"]) 
+
+
+#print pearsonr(finalmeanarray,df["Median"])
+
+
+
+#Percentiles for "Expenditures" for both hospitals who meet the criteria (BinY)
+#and those who don't (binN)
+#there is a small, but significant difference.  Qian can add this info to visualization
+print "Expenditures"
+print ""
+print np.percentile(binY,25)
+print np.percentile(binY,75)
+print np.percentile(binN,25)
+print np.percentile(binN,75)
+
+#Percentiles for "Median income" of the zip codes of hospitals who meet the criteria (BinY)
+#and those who don't (binN)
+#there seems to be a small but significant difference.  Qian can add this to visualization.
+print "Median Income"
+print ""
+print np.percentile(medianbinY,25)
+print np.percentile(medianbinY,75)
+print np.percentile(medianbinN,25)
+print np.percentile(medianbinN,75)
+
+
+
+
