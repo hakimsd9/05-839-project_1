@@ -151,14 +151,17 @@ def retrieveTimelyInfo(timelyAndEffectiveCare, delim=','):
                 info[currentZztop][currentProviderId] = dict()
                 info[currentZztop][currentProviderId][currentMeasureId] = currentScore
                 info[currentZztop][currentProviderId]['Address'] = currentAddress
+                info[currentZztop][currentProviderId]['Hospital Name'] = row_split[hospName]
             elif not currentProviderId in info[currentZztop]:
                 info[currentZztop][currentProviderId] = dict()
                 info[currentZztop][currentProviderId][currentMeasureId] = currentScore
                 info[currentZztop][currentProviderId]['Address'] = currentAddress
+                info[currentZztop][currentProviderId]['Hospital Name'] = row_split[hospName]
             else:
                 info[currentZztop][currentProviderId][currentMeasureId] = currentScore
                 info[currentZztop][currentProviderId]['Address'] = currentAddress
-                
+                info[currentZztop][currentProviderId]['Hospital Name'] = row_split[hospName]
+                                
    
     return info
 
@@ -201,7 +204,7 @@ def writeResults(hcapsDict, totalExpDict, timelyInfoDict, medianDict, outputFile
     """
     Generate csv zipCode\tproviderId\tTotalExpenditures\tvariablesInTimelyCare\tMedian
     """
-    variables = ['Zip', 'Provider Id', 'Address', 'total Expenditures','OP_6',
+    variables = ['Zip', 'Provider Id', 'Hospital Name','Address', 'total Expenditures','OP_6',
                  'OP_7','SCIP_INF_3','SCIP_CARD_2',
                  'SCIP_VTE_2','SCIP_INF_9','PN_6','HF_1',
                  'HF_2','IMM_2', 'Median', '\"NO\", patients would not recommend the hospital (they probably would not or definitely would not recommend it)',
@@ -222,9 +225,12 @@ def writeResults(hcapsDict, totalExpDict, timelyInfoDict, medianDict, outputFile
                     if provider in totalExpDict:
 #                        print(provider)
 #                        to_write = [currentZip]+";"+provider+";"+totalExpDict[provider]]
-                        to_write = [currentZip,provider,timelyInfoDict[k][provider]['Address'],totalExpDict[provider]]
+                        to_write = [currentZip,
+                                    provider,timelyInfoDict[k][provider]['Hospital Name'],
+                                    timelyInfoDict[k][provider]['Address'],
+                                    totalExpDict[provider]]
 
-                        for var in variables[4:14]:
+                        for var in variables[5:15]:
 #                            print(k,provider,var,len(timelyInfoDict[k][provider]))
                             if var in timelyInfoDict[k][provider]:
                                 to_write.append(timelyInfoDict[k][provider][var])
@@ -232,10 +238,10 @@ def writeResults(hcapsDict, totalExpDict, timelyInfoDict, medianDict, outputFile
                                 to_write.append("Not Available")
                         to_write.append(medianDict[currentZip])
                         if provider in hcapsDict:
-                            for var in variables[15:len(variables)]:
+                            for var in variables[16:len(variables)]:
                                 to_write.append(hcapsDict[provider][var])
                         else:
-                            for var in variables[15:len(variables)]:
+                            for var in variables[16:len(variables)]:
                                 to_write.append("Not Available")
                             
                         wrt.writerow(to_write)
