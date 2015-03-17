@@ -1,8 +1,7 @@
 __author__ = 'patrickwedgeworth'  
-#Citation 1: http://stackoverflow.com/questions/13643363/linear-regression-of-arrays-containing-nans-in-python-numpy
-#Citation 2: http://blog.yhathq.com/posts/logistic-regression-and-python.html
 
-
+import plotly.plotly as py
+from plotly.graph_objs import *
 import pandas as pd
 import matplotlib
 from statsmodels import api as sm
@@ -17,15 +16,23 @@ df = pd.read_csv("/Users/patrickwedgeworth/Desktop/Mankoffdev/ProfByte1/Project1
 # take a look at the dataset
 print df.head()
 
-#name columns
+
+# rename the columns
 df.columns = ["Zip","Provider","Expenditures","OP_6","OP_7","SCIP_INF_3","SCIP_CARD_2","SCIP_VTE_2","SCIP_INF_9","PN_6","HF_1","HF_2","IMM_2","Median"]
 print df.columns
 
 # summarize the data
 print df.describe()
+ 
+# take a look at the standard deviation of each column
+print df.std()
+
+
+print len(df["HF_1"])
+print len(df["Provider"])
 
 #create and populate arrays that show whether the hospital @ index meets the 
-#standard (1) or not (0) and arrays that will store actual values (indexarrays)
+#standard (1) or not (0)
 HF_1_scorearray = []
 HF_1_indexarray = []
 HF_2_scorearray = []
@@ -47,19 +54,73 @@ SCIP_INF_9_scorearray = []
 SCIP_VTE_2_indexarray = []
 SCIP_VTE_2_scorearray = []
 
-#create bins that will divide hospitals in "qualified for award" (binY)
-#or "not qualified for award" (binN)
 binY = []
 binN = []
 medianbinY = []
 medianbinN = []
 
-#Create arrays to store the final number of criteria met by each hospital (finalscorearray)
-#and to store the average score for each hospital (finalmeanarray)
+HF_1_binY = []
+HF_1_binN = []
+HF_1_medianbinY = []
+HF_1_medianbinN = []
+
+#return to HF2... potentially interesting, but too few samples!
+HF_2_binY = []
+HF_2_binN = []
+HF_2_medianbinY = []
+HF_2_medianbinN = []
+
+IMM_2_binY = []
+IMM_2_binN = []
+IMM_2_medianbinY = []
+IMM_2_medianbinN = []
+
+OP_6_binY = []
+OP_6_binN = []
+OP_6_medianbinY = []
+OP_6_medianbinN = []
+
+OP_7_binY = []
+OP_7_binN = []
+OP_7_medianbinY = []
+OP_7_medianbinN = []
+
+PN_6_binY = []
+PN_6_binN = []
+PN_6_medianbinY = []
+PN_6_medianbinN = []
+
+SCIP_CARD_2_binY = []
+SCIP_CARD_2_binN = []
+SCIP_CARD_2_medianbinY = []
+SCIP_CARD_2_medianbinN = []
+
+SCIP_INF_3_binY = []
+SCIP_INF_3_binN = []
+SCIP_INF_3_medianbinY = []
+SCIP_INF_3_medianbinN = []
+
+SCIP_INF_9_binY = []
+SCIP_INF_9_binN = []
+SCIP_INF_9_medianbinY = []
+SCIP_INF_9_medianbinN = []
+
+SCIP_VTE_2_binY = []
+SCIP_VTE_2_binN = []
+SCIP_VTE_2_medianbinY = []
+SCIP_VTE_2_medianbinN = []
+
+percent_binY = []
+percent_binN = []
+percent_medianbinY = []
+percent_medianbinN = []
+
 finalscorearray = []
 finalmeanarray = []
 
-#populate these arrays
+finalratioarray = []
+
+#create arrays for whether a hospital has 90% quality or more for a particular measure
 for index in range(len(df["Provider"])):
     HF_1_indexarray.extend([df["HF_1"][index]])
     if df["HF_1"][index] > 90:
@@ -121,61 +182,149 @@ for index in range(len(df["Provider"])):
     else:
         SCIP_VTE_2_scorearray.extend([0])
     
+    #Calculate a final score based on whether the hospital meets 90% or more for each of the measures
     scoreval = HF_1_scorearray[index]+HF_2_scorearray[index]+IMM_2_scorearray[index]+OP_6_scorearray[index]+OP_7_scorearray[index]+PN_6_scorearray[index]+SCIP_CARD_2_scorearray[index]+SCIP_INF_3_scorearray[index]+SCIP_INF_9_scorearray[index]+SCIP_VTE_2_scorearray[index]
     finalscorearray.extend([scoreval])
-    
-    if scoreval == 10:
+
+    #Create an array that contains the average score for each hospital
+    finalpercentarray = [df["HF_1"][index], df["HF_2"][index], df["IMM_2"][index], df["OP_6"][index], df["OP_7"][index], df["PN_6"][index], df["SCIP_CARD_2"][index], df["SCIP_INF_3"][index],df["SCIP_INF_9"][index], df["SCIP_VTE_2"][index]]
+    finalmeanarray.extend([np.mean(finalpercentarray)])
+
+
+    #Divid hospitals into those that meet the quality measures for the award and those that don't
+    if scoreval == 10 and finalmeanarray[index] > 96:
         binY.extend([df["Expenditures"][index]])
         medianbinY.extend([df["Median"][index]])
     else:
         binN.extend([df["Expenditures"][index]])
         medianbinN.extend([df["Median"][index]])
-            
+
+    #for further explanation, divide hospitals into two groups based on whether they met each of the individual criteria 
+    if HF_1_scorearray[index] == 1:
+        HF_1_binY.extend([df["Expenditures"][index]])
+        HF_1_medianbinY.extend([df["Median"][index]])
+    else:
+        HF_1_binN.extend([df["Expenditures"][index]])
+        HF_1_medianbinN.extend([df["Median"][index]])
+
+    if HF_2_scorearray[index] == 1:
+        HF_2_binY.extend([df["Expenditures"][index]])
+        HF_2_medianbinY.extend([df["Median"][index]])
+    else:
+        HF_2_binN.extend([df["Expenditures"][index]])
+        HF_2_medianbinN.extend([df["Median"][index]])
+
+    if IMM_2_scorearray[index] == 1:
+        IMM_2_binY.extend([df["Expenditures"][index]])
+        IMM_2_medianbinY.extend([df["Median"][index]])
+    else:
+        IMM_2_binN.extend([df["Expenditures"][index]])
+        IMM_2_medianbinN.extend([df["Median"][index]])
+
+    if OP_6_scorearray[index] == 1:
+        OP_6_binY.extend([df["Expenditures"][index]])
+        OP_6_medianbinY.extend([df["Median"][index]])
+    else:
+        OP_6_binN.extend([df["Expenditures"][index]])
+        OP_6_medianbinN.extend([df["Median"][index]])
+    if OP_7_scorearray[index] == 1:
+        OP_7_binY.extend([df["Expenditures"][index]])
+        OP_7_medianbinY.extend([df["Median"][index]])
+    else:
+        OP_7_binN.extend([df["Expenditures"][index]])
+        OP_7_medianbinN.extend([df["Median"][index]])
+    if PN_6_scorearray[index] == 1:
+        PN_6_binY.extend([df["Expenditures"][index]])
+        PN_6_medianbinY.extend([df["Median"][index]])
+    else:
+        PN_6_binN.extend([df["Expenditures"][index]])
+        PN_6_medianbinN.extend([df["Median"][index]])
+    if SCIP_CARD_2_scorearray[index] == 1:
+        SCIP_CARD_2_binY.extend([df["Expenditures"][index]])
+        SCIP_CARD_2_medianbinY.extend([df["Median"][index]])
+    else:
+        SCIP_CARD_2_binN.extend([df["Expenditures"][index]])
+        SCIP_CARD_2_medianbinN.extend([df["Median"][index]])
+    if SCIP_INF_3_scorearray[index] == 1:
+        SCIP_INF_3_binY.extend([df["Expenditures"][index]])
+        SCIP_INF_3_medianbinY.extend([df["Median"][index]])
+    else:
+        SCIP_INF_3_binN.extend([df["Expenditures"][index]])
+        SCIP_INF_3_medianbinN.extend([df["Median"][index]])
+    if SCIP_INF_9_scorearray[index] == 1:
+        SCIP_INF_9_binY.extend([df["Expenditures"][index]])
+        SCIP_INF_9_medianbinY.extend([df["Median"][index]])
+    else:
+        SCIP_INF_9_binN.extend([df["Expenditures"][index]])
+        SCIP_INF_9_medianbinN.extend([df["Median"][index]])
+    if SCIP_VTE_2_scorearray[index] == 1:
+        SCIP_VTE_2_binY.extend([df["Expenditures"][index]])
+        SCIP_VTE_2_medianbinY.extend([df["Median"][index]])
+    else:
+        SCIP_VTE_2_binN.extend([df["Expenditures"][index]])
+        SCIP_VTE_2_medianbinN.extend([df["Median"][index]])
+    if finalmeanarray[index] > 96:
+        percent_binY.extend([df["Expenditures"][index]])
+        percent_medianbinY.extend([df["Median"][index]])
+    else:
+        percent_binN.extend([df["Expenditures"][index]])
+        percent_medianbinN.extend([df["Median"][index]])
             
     finalpercentarray = [df["HF_1"][index], df["HF_2"][index], df["IMM_2"][index], df["OP_6"][index], df["OP_7"][index], df["PN_6"][index], df["SCIP_CARD_2"][index], df["SCIP_INF_3"][index],df["SCIP_INF_9"][index], df["SCIP_VTE_2"][index]]
     finalmeanarray.extend([np.mean(finalpercentarray)])
 
+    finalratioarray.extend(np.mean(finalpercentarray)/[df["Expenditures"][index]])
+
+
+
     
-#Although pearson came to the same conclusion as simply using medians, 
-#it is meant for normally distributed data.  Ours isn't so all pearson analysis has been commented
 
-#print np.corrcoef(finalmeanarray,df["Expenditures"])
-#print pearsonr(finalmeanarray,df["Expenditures"]) 
-#print pearsonr(HF_1_indexarray,df["Expenditures"]) 
-#print pearsonr(HF_2_indexarray,df["Expenditures"]) 
-#print pearsonr(IMM_2_indexarray,df["Expenditures"]) 
-#print pearsonr(OP_6_indexarray,df["Expenditures"]) 
-#print pearsonr(OP_7_scorearray,df["Expenditures"]) 
-#print pearsonr(PN_6_scorearray,df["Expenditures"]) 
-#print pearsonr(SCIP_CARD_2_scorearray,df["Expenditures"]) 
-#print pearsonr(SCIP_INF_3_scorearray,df["Expenditures"]) 
-#print pearsonr(SCIP_INF_9_scorearray,df["Expenditures"]) 
-#print pearsonr(SCIP_VTE_2_scorearray,df["Expenditures"]) 
+#Code for plotting histograms based on various permutations of data.  Change x0, x1, x2 based on what you want to explore
+
+x0 = percent_binY
+x1 = percent_binN
+x2 = finalmeanarray
+
+stuff = np.random.randn(500)
+stuff2 = np.random.randn(500)
+
+#code to print results of t-test.  Only use on normally distributed data!
+print st.ttest_ind(binY,binN,equal_var=False)
+print st.ttest_ind(stuff,stuff2)
+
+#code for overlapping histogram
+'''Good_Quality= Histogram(
+    x=x0,
+    opacity=0.75,
+    name='Good Quality'
+)
+Low_Quality = Histogram(
+    x=x1,
+    opacity=0.75,
+    name='Low Quality'
+)
+data = Data([Good_Quality, Low_Quality])
+layout = Layout(
+    title='Hospital Spending Histogram',
+    barmode='stack'
+)
+fig = Figure(data=data, layout=layout)
+plot_url = py.plot(fig, filename='exploration')'''
+
+#code for normal histogram
+hist= Histogram(
+    x=x2,
+    opacity=0.75,
+    name='Good Quality'
+)
+data = Data([hist])
+layout = Layout(
+    title='Hospital Spending Histogram',
+)
+fig = Figure(data=data, layout=layout)
+plot_url = py.plot(fig, filename='exploration2')
 
 
-#print pearsonr(finalmeanarray,df["Median"])
-
-
-
-#Percentiles for "Expenditures" for both hospitals who meet the criteria (BinY)
-#and those who don't (binN)
-#there is a small, but significant difference.  Qian can add this info to visualization
-print "Expenditures"
-print ""
-print np.percentile(binY,25)
-print np.percentile(binY,75)
-print np.percentile(binN,25)
-print np.percentile(binN,75)
-
-#Percentiles for "Median income" of the zip codes of hospitals who meet the criteria (BinY)
-#and those who don't (binN)
-#there seems to be a small but significant difference.  Qian can add this to visualization.
-print "Median Income"
-print ""
-print np.percentile(medianbinY,25)
-print np.percentile(medianbinY,75)
-print np.percentile(medianbinN,25)
-print np.percentile(medianbinN,75)
 
 
 
